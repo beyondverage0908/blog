@@ -43,11 +43,14 @@
 
 > Operation: The NSOperation class is an abstract class you use to encapsulate the code and data associated with a single task.
 
-解释：Operation是一个抽象类，用于概括由一段代码和数据组成的任务。
+解释：Operation是一个抽象类。你可以通过组织一段代码和数据，表示一个任务。
 
 > Operation Queue: The NSOperationQueue class regulates the execution of a set of NSOperation objects.
 
-解释： NSOperationQueue用于规则的去执行一系列Operation。
+解释： NSOperationQueue用于规则的去执行一系列Operation。  
+任务：通常的说是由一段代码和数据组成，可以完成特定某项功能的代码数据集合。  
+进程：进程可以理解CPU所能执行的单个任务，CPU任何一个时刻职能运行一个进程。  
+线程：线程是计算机CPU所能执行最小单元，亦可以理解简化版的进程。一个进程可以包含多个线程。
 
 ## 串行 vs 并发
 
@@ -66,7 +69,7 @@
 
 ## iOS并发编程模型
 
-对于一个APP，需要提高应用的性能，一般需要创建其它的线程去执行任务，在整个APP的声明周期内，我们需要自己手动去创建，销毁线程，以及暂停，开启线程。对于这创建一个这样的线程管理器，已经是非常复杂且艰巨的任务。但是苹果爸爸为开发者提供了两套更好的解决方案：**[NSOperation](https://developer.apple.com/library/mac/documentation/Cocoa/Reference/NSOperation_class/)**，**[Grand Central Dispatch (GCD) Reference](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/)**，GCD的方式具体的本文暂不讨论。
+对于一个APP，需要提高应用的性能，一般需要创建辅助的线程去执行任务。在整个APP的生命周期内，我们需要自己手动去创建，销毁线程，以及暂停，开启线程。对于这创建一个这样的线程管理方案，已经是非常复杂且艰巨的任务。但是苹果爸爸为开发者提供了两套更好的解决方案：**[NSOperation](https://developer.apple.com/library/mac/documentation/Cocoa/Reference/NSOperation_class/)**，**[Grand Central Dispatch (GCD) Reference](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/)**，GCD的方式具体的本文暂不讨论。
 
 使用NSOperationQueue 和 NSOperation的方式是苹果基于GCD再一次封装的一层，比GCD更加的灵活，而且是一种面向对象设计，更加适合开发人员。虽然相对于GCD会牺牲一些性能，但是我们可以对线程进行更多的操作，比如暂停，取消，添加Operation间的依赖。但是GCD如果暂停和取消线程操作则十分的麻烦。
 
@@ -84,7 +87,7 @@
 `NSOperation`对象是一个抽象类，是不能直接创建对象的。但是它有两个子类——`NSBlockOperation`，`NSInvocationOperation`.通常情况下我们都可以直接使用这两个子类，创建可以并发的任务。
 
 我们查看关于NSOperation.h的头文件，可以发现任意的operation对象都可以自行开始任务(start)，取消任务(cancle)，以及添加依赖(addDependency:)和移除依赖(removeDependency:).**关于依赖，有一种很好的一种开发思路**。在operation对象中有很多属性，可以用于检测当前任务的状态，如`isCancelled`:是否已经取消，`isFinished`:是否已经完成了任务。
-![NSOperation](/Users/user/Desktop/屏幕快照 2016-06-07 下午8.29.04.png)
+![屏幕快照 2016-06-07 下午8.29.04.png](http://upload-images.jianshu.io/upload_images/1626952-be8fe4d46ab20aa2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 * **创建NSBlockOperation**
 
@@ -344,9 +347,20 @@
 
 **依赖，是一种非常好用功能，在我们做项目(生活中)的时候，很多时候都一种依赖的概念。比如，用户需要上传一张照片到自己的空间，但是此时必须检测该用户是否已经登录。以前我们可能将两个逻辑写在一起，但是现在可以将成写成两个不同的operation，并设置它们的依赖。这样的好处非常可见的：  
 第一点：它可以帮我们解藕，不同的逻辑分在不一样的对象中。  
-第二点：某些常用的逻辑会经常用到，不需要一次次的重复，可读性增强，以后需要的时候直接调用，设置其依赖即可。比如检测是否登录**
+第二点：某些常用的逻辑会经常用到，以后不需要一次次的重复，可读性增强，以后需要的时候直接调用，设置其依赖即可。比如检测是否登录**
 
 
 ## 总结
 
 多线程执行任务看似十分的复杂，但是如果将复杂的任务交给`NSOperation` and `NSOperationQueue`，就可以简化它的难度，并且它似乎可以比我们自己处理的更好。
+
+文中使用的demo - [LSOperationAndOperationQueueDemo](https://github.com/beyondverage0908/MyDemo/tree/master/LSOperationAndOperationQueueDemo)
+
+## 感谢 
+
+以下文章给我带来非常大的帮助
+ 
+[还在疑惑并发和并行？](https://laike9m.com/blog/huan-zai-yi-huo-bing-fa-he-bing-xing,61/)  
+[进程与线程的一个简单解释](http://www.ruanyifeng.com/blog/2013/04/processes_and_threads.html)  
+[iOS 并发编程之 Operation Queues](http://blog.leichunfeng.com/blog/2015/07/29/ios-concurrency-programming-operation-queues/)  
+[NSOperationQueue - 文档](https://developer.apple.com/library/mac/documentation/Cocoa/Reference/NSOperationQueue_class/)
