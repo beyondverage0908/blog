@@ -16,16 +16,13 @@
 	3. 创建NSInvocationOperation对象
 
 * 自定义Operation对象
-	1. 执行主任务
-	2. 响应取消的事件
-	3. 配置并发执行的Operation
-	4. 维护KVO通知
+	1. 自定义的非并发NSOperation－不实现取消操作
+	2. 自定义的非并发NSOperation－实现取消操作
 
 * 定制Operation对象的执行行为
-	1. 配置依赖关系
-	2. 修改Operation在队列中的优先级
-	3. 修改Operation执行任务线程的优先级
-	4. 设置Completion Block
+	1. 修改Operation在队列中的优先级
+	2. 修改Operation执行任务线程的优先级
+	3. 设置Completion Block
 
 * 执行Operation对象
 	1. 添加Operation到Operation Queue中
@@ -91,7 +88,7 @@
 
 * **创建NSBlockOperation**
 
-以下使用到的代码片段取自我的[LSOperationAndOperationQueueDemo]()
+以下使用到的代码片段取自我的[LSOperationAndOperationQueueDemo](https://github.com/beyondverage0908/MyDemo/tree/master/LSOperationAndOperationQueueDemo)
 
 `NSBlockOperation`顾名思义，是是用block来创建任务，主要有两种方式创建，一种是是用类方法，一种是创建operation对象，再添加任务。上代码：以下代码包括了两种block创建任务的方式。以及已经有任务的operation对象再添加任务。及直接添加任务到queue中。
 
@@ -155,7 +152,7 @@
 
 `NSInvocationOperation`是另一种可创建的operation对象的类。但是在Swift中已经被去掉了。`NSInvocationOperation`是一种可以非常灵活的创建任务的方式，主要是其中包含了一个`target`和`selector`。假设我们现在有一个任务，已经在其它的类中写好了，为了避免代码的重复，我们可以将当前的`target`指向为那个类对象，方法选择器指定为那个方法即可，如果有参数，可以在`NSInvocationOperation`创建中指定对应的Object(参数).
 
-具体的可以看如下代码：[LSOperationAndOperationQueueDemo]()
+具体的可以看如下代码：[LSOperationAndOperationQueueDemo](https://github.com/beyondverage0908/MyDemo/tree/master/LSOperationAndOperationQueueDemo)
 
 	@implementation LSInvocationOperation
 
@@ -196,3 +193,160 @@
 	}
 	
 	@end
+
+## 自定义Operation对象
+
+上文介绍了两种系统定义的NSOperation，通常情况下，我们可以直接使用，已经可以满足了大部分的需求。但是当系统的不能满足时候，我们就需要自定义我们自己的Operation对象。Operation对象可以分为并发的和非并发的两类。从实现角度上而言，非并发的更容易实现的多。因为非并发的Operation对象中的很多属性，它的父类已经做好了管理，我们只需要直接使用就可以了。**(通常情况下，实现多线程是由NSOperationQueue对象管理的，而不是NSOperation对象)**实现自定义的NSOperation对象，最少需要重写两个方法，一个是初始化init方法(传值)，一个是mian方法(主要的逻辑实现)。
+
+* **自定义的非并发NSOperation－不实现取消操作**
+	
+	代码片段取自[LSOperationAndOperationQueueDemo](https://github.com/beyondverage0908/MyDemo/tree/master/LSOperationAndOperationQueueDemo)
+	
+		@interface LSNonConcurrentOperation ()
+
+		@property (nonatomic, strong)id data;
+		
+		@end
+		
+		/**
+		 自定义一个非并发的Operation，最少需要实现两个方法，一个初始化的init方法，另一个是mian方法，即主方法，逻辑的主要执行体。
+		 */
+		@implementation LSNonConcurrentOperation
+		
+		- (id)initWithData:(id)data {
+		    self = [self init];
+		    if (self) {
+		        self.data = data;
+		    }
+		    return self;
+		}
+		
+		// 该主方法不支持Operation的取消操作
+		- (void)main {
+		    @try {
+		        
+		        NSLog(@"-------- LSNonConcurrentOperation - data:%@, mainThread:%@, currentThread:%@", self.data, [NSThread mainThread], [NSThread currentThread]);
+		        sleep(2);
+		        NSLog(@"-------- finish executed %@", NSStringFromSelector(_cmd));
+		        
+		    } @catch (NSException *exception) {
+		        
+		        NSLog(@"------- LSNonConcurrentOperation exception - %@", exception);
+		        
+		    } @finally {
+		        
+		    }
+		}
+
+* **自定义的非并发NSOperation－实现取消操作**
+
+		- (void)main {
+		    // 执行之前，检查是否取消Operation
+		    if (self.isCancelled) return;
+		
+		    @try {
+		        NSLog(@"-------- LSNonConcurrentOperation - data:%@, mainThread:%@, currentThread:%@", self.data, [NSThread mainThread], [NSThread currentThread]);
+		        
+		        // 循环去检测执行逻辑过程中是否取消当前正在执行的Operation
+		        for (NSInteger i = 0; i < 10000; i++) {
+		            
+		            NSLog(@"run loop -- %@", @(i + 1));
+		            
+		            if (self.isCancelled) return;
+		            sleep(1);
+		        }
+		        NSLog(@"-------- finish executed %@", NSStringFromSelector(_cmd));
+		    } @catch (NSException *exception) {
+		        NSLog(@"------- LSNonConcurrentOperation exception - %@", exception);
+		        
+		    } @finally {
+		        
+		    }
+		}
+
+**由上可以知道，取消一个任务的执行，其实并不是立即就会取消，而是会在一个runloop中不断的去检查，判断isCancle的值，直到为yes时候，则取消了操作。所以，设置Operation为cancle的时候，至少需要一个runloop的时间才会结束操作。**
+
+## 定制Operation对象的执行行为
+
+* **修改Operation在队列中的优先级**
+
+`NSOperation`对象在Queue中可以设置执行任务的优先级。我们可以通过设置operation对象的`setQueuePriority:`方法，改变任务在队列中的执行优先级。但是真正决定一个operation对象能否执行的是`isReady`，假设一个operation对象的在队列执行的优先级很高，另一个很低，但是高的operation对象的`isReady`是NO，也只会执行优先级低的operation任务。另一个影响任务在队列中执行顺序的是依赖(下文会讲到)，假设operation A依赖于operation B，所以一定先执行operation B,再执行operation A.
+
+* **修改Operation执行任务线程的优先级**
+
+从iOS4.0开始，我们可以设置operation中任务执行的线程优先级。从iOS4.0到iOS8.0，operation对象可以通过方法`setThreadPriority:`，这里的参数是一个double类型，范围是0.0到1.0，设置越高，理论上讲，线程执行的可能性就越高。但是从iOS8.0之后，这个方法已经被废弃了，使用`setQualityOfService:`代替，这里参数是一个预设的枚举值。
+
+* **设置Completion Block**
+
+同上，从iOS4.0开始，可以给每个operation对象设置一个主任务完成之后的完成回调`setCompletionBlock:`。所设置的block执行是在检测到operation的`isFinished`为YES后执行的。值得注意的是：**我们并不能保证block所在的线程一定在主线程，所以当我们需要对主线程上做一些操作的时候，我们应该切换线程到主线程中，如需在其他线程执行的某些操作，亦需要切换线程。**
+> Therefore, you should not use this block to do any work that requires a very specific execution context. Instead, you should shunt that work to your application’s main thread or to the specific thread that is capable of doing it. 
+
+## 执行Operation对象
+
+对于执行一个Operation对象，一般的做法是将operation对象添加到一个队列中去，之后队列会根据当前系统的状态，以及内核的状态，自行的去执行operation中的任务。
+
+	NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+	[queue addOperation:opt];
+	
+还有一种做法是，我们可以手动的执行一个operation对象，直接调用operation的`start`方法
+
+	[opt start];
+	
+* **添加Operation到Operation Queue中**
+
+将operation对象添加到queue中非常简单
+
+首先创建一个队列：
+	
+	NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+	
+添加到队列的方法如下：
+
+	- (void)addOperation:(NSOperation *)op;
+	- (void)addOperations:(NSArray<NSOperation *> *)ops waitUntilFinished:(BOOL)wait NS_AVAILABLE(10_6, 4_0);
+	- (void)addOperationWithBlock:(void (^)(void))block NS_AVAILABLE(10_6, 4_0);
+	
+第一个：添加意境存在的operation对象   
+第二个：添加一组operation对象  
+第三个：直接添加一个block到队列中，无需创建operation对象
+
+* **手动执行Operation**
+
+一般情况下，我们不需要手动的去执行一个operation对象，但如果需要，亦可，调用`start`方法。
+
+	[opt start];
+	
+* **取消Operation**
+
+当我们将一个operation对象添加到队列中之后，operation就已经被队列所拥有。我们可以在某个需要的时候调用operation对象的`cancle`方法，将operation出列。并且此时operation的`isFinished`也会为YES，所以此时依赖于它的operation就回继续得到执行。当然，我们可以直接调用队列的`cancelAllOperations`方法，取消了队列中所有的operation执行。
+
+* **等待Operation执行完成**
+
+等待一个Operation对象的执行完成，可以使用`waitUntilFinished`方法。但是应该注意到，等待一个任务执行完，会阻塞当前线程。所以我们绝不应该在主线程中做该操作，那样会带来非常差的体验。所以该操作应该使用辅助线程中。
+我们也可以调用`NSOperationQueue`对象的`waitUntilAllOperationsAreFinished`方法，知道所有的任务都执行完成。
+
+* **暂停和恢复Operation Queue**
+
+通过设置队列的`setSuspended`,我们可以暂停一个队列中还没有开始执行的operation对象，对于已经开始的执行的任务，将继续执行。并且，已经暂停了队列，仍然可以继续添加operation对象，但是不会执行，只能等到从暂停(挂起)状态切换到非暂停状态。即设置`setSuspended`为NO。对于单个的operation，是没有暂停的概念的。
+
+>When the value of this property is NO, the queue actively starts operations that are in the queue and ready to execute. Setting this property to YES prevents the queue from starting any queued operations, but already executing operations continue to execute. You may continue to add operations to a queue that is suspended but those operations are not scheduled for execution until you change this property to NO.
+
+
+## 添加Operation Queue中Operation对象之间的依赖
+
+在`NSOperationQueue`中，如果没有经过对operation添加依赖，都是使用并发处理的。但是在某些情况下，我们对任务的执行是有非常严格的规定的。即需要串行执行，此时，我们就需要对operation对象间进行添加依赖处理。
+
+	- (void)addDependency:(NSOperation *)op;
+	- (void)removeDependency:(NSOperation *)op;
+
+第一个：添加依赖   
+第二个：移除依赖
+
+**依赖，是一种非常好用功能，在我们做项目(生活中)的时候，很多时候都一种依赖的概念。比如，用户需要上传一张照片到自己的空间，但是此时必须检测该用户是否已经登录。以前我们可能将两个逻辑写在一起，但是现在可以将成写成两个不同的operation，并设置它们的依赖。这样的好处非常可见的：  
+第一点：它可以帮我们解藕，不同的逻辑分在不一样的对象中。  
+第二点：某些常用的逻辑会经常用到，不需要一次次的重复，可读性增强，以后需要的时候直接调用，设置其依赖即可。比如检测是否登录**
+
+
+## 总结
+
+多线程执行任务看似十分的复杂，但是如果将复杂的任务交给`NSOperation` and `NSOperationQueue`，就可以简化它的难度，并且它似乎可以比我们自己处理的更好。
