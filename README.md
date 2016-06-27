@@ -1,5 +1,4 @@
 # MyMD
 
-**一些博客的markdown文件**
+**博客的markdown源文件**
 
-**Some blog markdown files**
