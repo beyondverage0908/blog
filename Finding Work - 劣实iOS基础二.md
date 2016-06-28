@@ -141,11 +141,11 @@
 
 继承关系：
 
-![类的继承关系](/Users/user/MyMD/pic resource/111111.jpg)
+![类的继承关系](http://upload-images.jianshu.io/upload_images/1626952-c8640ad0e1c3ea59.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 内存结构：
 
-![内存关系结构图](/Users/user/MyMD/pic resource/22222.png)
+![内存关系结构图](http://upload-images.jianshu.io/upload_images/1626952-9b7f93fba15d15c3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
@@ -232,3 +232,9 @@
 	};
 
 ## 如何在OC中使用C++或C
+
+> OC是C的一个超集，在OC中是可以使用C++和C语言的
+
+设置也非常的简单，只需要到XCode工程中的target中，到Build Setting中，找到**Apple LLVM Compile**区域，选择**Compile Sources As**中选择C++即可
+
+![complier_cpp](http://upload-images.jianshu.io/upload_images/1626952-da3754115b16cb29.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
