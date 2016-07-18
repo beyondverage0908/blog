@@ -115,3 +115,27 @@
 		    }
 		    return tip;
 		}
+		
+8. 获取指定路径下的文件大小(缓存)
+
+		+ (long long)fileSizeAtPath:(NSString *) filePath {
+		
+		    NSFileManager* manager = [NSFileManager defaultManager];
+		    if ([manager fileExistsAtPath:filePath]){
+		        return [[manager attributesOfItemAtPath:filePath error:nil] fileSize];
+		    }
+		    return 0;
+		}
+		
+		+ (float)folderSizeAtPath:(NSString*) folderPath {
+		    NSFileManager* manager = [NSFileManager defaultManager];
+		    if(![manager fileExistsAtPath:folderPath]) return 0;
+		    NSEnumerator *childFilesEnumerator = [[manager subpathsAtPath:folderPath]objectEnumerator];
+		    NSString *fileName;
+		    long long folderSize = 0;
+		    while((fileName = [childFilesEnumerator nextObject]) != nil){
+		        NSString* fileAbsolutePath = [folderPath stringByAppendingPathComponent:fileName];
+		        folderSize += [self fileSizeAtPath:fileAbsolutePath];
+		    }
+		    return folderSize/(1024.0*1024.0);
+		}
