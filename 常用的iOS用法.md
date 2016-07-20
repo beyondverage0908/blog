@@ -12,7 +12,7 @@
 2. 弱引用 
 	
 		__weak __typeof(self)weakSelf = self;
-		__strong __typeof(weakSelf)strongSelf = weakSelf;noti
+		__strong __typeof(weakSelf)strongSelf = weakSelf;
 		
 3. 键盘的弹出
 	
