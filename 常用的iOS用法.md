@@ -141,4 +141,12 @@
 		}
 		
 		
-// just for test dev branch
+9. 判断应用是否接受远程通知
+
+		if (IOS8) { //iOS8以上包含iOS8  
+	        if ([[UIApplication sharedApplication] currentUserNotificationSettings].types  == UIRemoteNotificationTypeNone) {  
+			    }  
+		 }else{ // ios7 一下      
+		    if ([[UIApplication sharedApplication] enabledRemoteNotificationTypes]  == UIRemoteNotificationTypeNone) {  
+		  }  
+		}
