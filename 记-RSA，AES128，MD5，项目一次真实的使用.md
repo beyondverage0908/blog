@@ -1,4 +1,4 @@
-# 记-RSA，AES128，MD5，项目一次真实的使用
+# 结合RSA，AES128，MD5---移动端与服务端在通信层的加密处理
 
 > 很高兴能在项目中使用到RSA，AES128，以及MD5，用以保证客户端(Client)和服务端(Server)之间的通信安全。接下来会尽力的描述清楚关于本次使用的流程。具体关于算法的细节，自行Wiki。
 
@@ -74,8 +74,21 @@
 
 > 假设加签之后的数据包被截获，然后解密成功，得到明文的数据包。但是签名md5加密是无法解密的(单向加密)。此时即时修改了step，然后post到服务器，服务器通过修改后的step，time，memberId得到的字符串经过md5加密后，一定会与客户端的签名不一致。从而数据被抛弃。
 
+## 流程图描述上文
 
+![客户端服务端通信加密逻辑.png](http://upload-images.jianshu.io/upload_images/1626952-b9991bb49d2f4f42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
+## 示例代码
+
+对于目前只做客户端的，我只能给出iOS端的代码，会上传的github上
+
+## 推荐工具
+
+之前一致比较苦扰在Mac上有哪一款好用的可以画流程图，UML的工具，甚至都考虑过Keynote。最后发现这款在线的工具很不错，上图就是使用这款工具，第一次画的。效果不错。就是导出png图片分辨率不是很好
+
+[工具processOn](http://www.processon.com/)
+
+[Mac 上最好用的流程图软件是什么？](https://www.zhihu.com/question/19588698)
 
 
 
