@@ -2,6 +2,8 @@
 
 > 很高兴能在项目中使用到RSA，AES128，以及MD5，用以保证客户端(Client)和服务端(Server)之间的通信安全。接下来会尽力的描述清楚关于本次使用的流程。具体关于算法的细节，自行Wiki。
 
+> 原来只是对加密这一块很简单的了解，比如只知道一些对称加密，非对称加密，md5单向加密等。通过本次的学习，很惊艳于可以将多种加密方式那么完美的结合到一起。让整个通信过程变得如此美妙。虽然增加了服务端和客户端的工作量，但是保证数据的一致出口，一致入口，只需要在出口和入口处加上逻辑，就可以很好的避免扰乱原有逻辑的烦恼。
+
 ## 简单的概念，文章可能会涉及到
 
 1. RSA——非对称加密，会产生公钥和私钥，公钥在客户端，私钥在服务端。公钥用于加密，私钥用于解密。
@@ -80,15 +82,48 @@
 
 ## 示例代码
 
-对于目前只做客户端的，我只能给出iOS端的代码，会上传的github上
+关于AES，和RSA加密解密，只能出iOS端的代码。关于如何在Linux下生成RSA公钥和私钥证书，参照[RSA公钥、私钥生成，详细讲解](http://www.jianshu.com/p/bfa57e049a7e)，网上很多
+
+[github的demo地址--CAAdvancedTech](https://github.com/beyondverage0908/CAAdvancedTech)
+
+运行，如下入显示
+
+![首页选择加密模块](http://upload-images.jianshu.io/upload_images/1626952-d672dbe8b91fa7ed.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![AES，RSA加密解密页面](http://upload-images.jianshu.io/upload_images/1626952-103e1ca8ed1d8540.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+## RSA公钥-生成自签名证书
+
+	// 生成1024位私钥
+	openssl genrsa -out private_key.pem 1024
+
+	// 根据私钥生成CSR文件
+	openssl req -new -key private_key.pem -out rsaCertReq.csr
+	
+	// 根据私钥和CSR文件生成crt文件
+	openssl x509 -req -days 3650 -in rsaCertReq.csr -signkey private_key.pem -out rsaCert.crt
+	
+	// 为IOS端生成公钥der文件
+	openssl x509 -outform der -in rsaCert.crt -out public_key.der
+	
+	// 将私钥导出为这p12文件
+	openssl pkcs12 -export -out private_key.p12 -inkey private_key.pem -in rsaCert.crt
+
+参照 [漫谈RSA非对称加密解密](http://www.jianshu.com/p/51bb0ad0b113)
 
 ## 推荐工具
 
-之前一致比较苦扰在Mac上有哪一款好用的可以画流程图，UML的工具，甚至都考虑过Keynote。最后发现这款在线的工具很不错，上图就是使用这款工具，第一次画的。效果不错。就是导出png图片分辨率不是很好
+1. 关于画流程图
 
-[工具processOn](http://www.processon.com/)
-
-[Mac 上最好用的流程图软件是什么？](https://www.zhihu.com/question/19588698)
+	之前一致比较苦扰在Mac上有哪一款好用的可以画流程图，UML的工具，甚至都考虑过Keynote。最后发现这款在线的工具很不错，上图就是使用这款工具，第一次画的。效果不错。就是导出png图片分辨率不是很好
+	
+	[工具processOn](http://www.processon.com/)
+	
+	[Mac 上最好用的流程图软件是什么？](https://www.zhihu.com/question/19588698)
+	
+2. 关于AES加密解密在线工具
+	
+	[在线AES加解密](http://www.seacha.com/tools/aes.html?src=kjwfNbM%2B%2BAKaIF8%2BbMMKdQ%3D%3D&mode=CBC&keylen=128&key=1111&iv=&bpkcs=&session=MCRm2Ac3VV2CGGBaWu00&aes=e006c1c0738be822b222bc4d2603a82a&encoding=base64&type=1)
 
 
 
