@@ -6,7 +6,7 @@
 
 Method Swizzling是一项在运行时，通过改变方法名(SEL)与函数指针之间的映射。从而改变方法实现的黑魔法技术。如下图。
 
-![Method Swizzling模型图.png](http://upload-images.jianshu.io/upload_images/1626952-940656a52c93368a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![Method Swizzling模型图.png](https://raw.githubusercontent.com/beyondverage0908/MyMD/master/resoure/method_swizzling_imp.png)
 
 ### 场景需求
 
