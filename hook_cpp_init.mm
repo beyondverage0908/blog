@@ -12,7 +12,7 @@
 #include <mach-o/loader.h>
 #include <mach-o/dyld.h>
 #include <dlfcn.h>
-#include <vector>
+#include <vector> // C++ 向量的使用，用于声明动态长度的数组
 
 static NSMutableArray *sInitInfos;
 static NSTimeInterval sSumInitTime;
@@ -29,6 +29,7 @@ const char* getallinitinfo(){
 }
 
 
+// 判断是否是六十四位机器
 using namespace std;
 #ifndef __LP64__
 typedef uint32_t MemoryType;
@@ -37,6 +38,7 @@ typedef uint64_t MemoryType;
 #endif /* defined(__LP64__) */
 
 
+// 声明一个动态的uint32_t/uint64_t的一维数组
 static std::vector<MemoryType> *g_initializer;
 static int g_cur_index;
 static MemoryType g_aslr;
@@ -52,11 +54,15 @@ struct MyProgramVars
     const char**	__prognamePtr;
 };
 
+// C++用法，给函数指针类型起一个别名
+// void * (int argc, const char* argv[], const char* envp[], const char* apple[], const MyProgramVars* vars) 起一个OriginalInitializer别名
 typedef void (*OriginalInitializer)(int argc, const char* argv[], const char* envp[], const char* apple[], const MyProgramVars* vars);
 
+// 自定义的init方法，用于统计系统的init方法的执行时长
 void myInitFunc_Initializer(int argc, const char* argv[], const char* envp[], const char* apple[], const struct MyProgramVars* vars){
     printf("my init func\n");
     ++g_cur_index;
+    // vector向量的方法 - 表示at: 得到vector的坐标index
     OriginalInitializer func = (OriginalInitializer)g_initializer->at(g_cur_index);
     
     CFTimeInterval start = CFAbsoluteTimeGetCurrent();
@@ -85,7 +91,9 @@ static void hookModInitFunc(){
 #endif /* defined(__LP64__) */
     for(int idx = 0; idx < size/sizeof(void*); ++idx){
         MemoryType original_ptr = memory[idx];
+        // vector方法：在一维最后添加一个元素
         g_initializer->push_back(original_ptr);
+        // 调用myInitFunc_Initializer
         memory[idx] = (MemoryType)myInitFunc_Initializer;
     }
     
