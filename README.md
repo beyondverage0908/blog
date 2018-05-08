@@ -1,4 +1,3 @@
-# MyMD
 
-**博客的markdown源文件**
+it's blog source file
 
