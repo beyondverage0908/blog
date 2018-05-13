@@ -1,12 +1,12 @@
-# Vue组件-父组件传值给子组件
+# Vue组件一-父组件传值给子组件
 
 ## 开始
 
 Vue组件是学习Vue框架最比较难的部分，而这部分难点我认为可以分为三个部分学习，即
 
 1. [组件的传值 - 父组件向子组件中传值](https://beyondverage0908.github.io/2018/05/08/blog-2018-05-08/)
-2. 事件回馈 - 子组件向父组件发送消息，父组件监听消息
-3. 分发内容 
+2. [事件回馈 - 子组件向父组件发送消息，父组件监听消息](https://beyondverage0908.github.io/2018/05/11/blog-2018-05-11/)
+3. [分发内容](https://beyondverage0908.github.io/2018/05/13/blog-2018-05-13/) 
 
 [整个博客使用的源代码-请点击](https://gitee.com/mdiep/LearnVue/blob/master/Html/component.html)
 
